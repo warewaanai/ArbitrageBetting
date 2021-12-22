@@ -4,7 +4,7 @@ import api
 
 def setup():
     create_bundles = """
-    CREATE TABLE ODDS_BUNDLE
+    CREATE TABLE IF NOT EXISTS ODDS_BUNDLE
          (
          NAME           TEXT      NOT NULL,
          DESCRIPTION    TEXT      NOT NULL,
@@ -17,7 +17,7 @@ def setup():
          );
     """
     create_odds = """
-    CREATE TABLE ODDS
+    CREATE TABLE IF NOT EXISTS ODDS
         (
          BOOKMAKER  TEXT                  NOT NULL,
          REGION     TEXT                  NOT NULL,
@@ -28,10 +28,6 @@ def setup():
          NXT        INT
         );
     """
-
-    
-    if os.path.exists('./active.db'):
-        return
 
     for db_name in ['./active.db', './historical.db']:
         conn = sqlite3.connect(db_name)
