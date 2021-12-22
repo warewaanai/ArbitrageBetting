@@ -14,7 +14,8 @@ load_dotenv()
 
 app = Flask(__name__, static_url_path='', static_folder='../frontend_build')
 
-@app.route('/setup'):
+@app.route('/setup')
+def stup():
     setup()
 
 @app.route('/api/get_bundles')
