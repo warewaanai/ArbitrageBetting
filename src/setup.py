@@ -38,6 +38,8 @@ def setup():
         lr = cur.lastrowid
         conn.commit()
         conn.close()
+        
+        print(f'registered {db_name}')
 
 
     api.full_update()
