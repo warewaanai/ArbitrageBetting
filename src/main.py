@@ -5,12 +5,15 @@ from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
 from setup import setup
+import os
 
 from structures.bundle import Bundle
 import api
 
 # setup
 load_dotenv()
+
+PORT = int(os.environ.get("PORT", 5000))
 
 app = Flask(__name__, static_url_path='', static_folder='../frontend_build')
 
@@ -51,4 +54,4 @@ def serve(path):
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(port=PORT)
