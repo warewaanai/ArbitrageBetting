@@ -20,6 +20,7 @@ app = Flask(__name__, static_url_path='', static_folder='../frontend_build')
 @app.route('/setup')
 def stup():
     setup()
+    return ""
 
 @app.route('/api/get_bundles')
 def get_bundles():
