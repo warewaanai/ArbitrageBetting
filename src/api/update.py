@@ -1,5 +1,6 @@
 import sqlite3
 import json
+import flask
 from typing import List
 from datetime import datetime
 
@@ -104,3 +105,4 @@ def full_update():
     conn_archive.close()
 
     print("Full update completed")
+

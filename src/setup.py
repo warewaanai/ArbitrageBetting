@@ -31,14 +31,18 @@ def setup():
 
     
     if os.path.exists('./active.db'):
-        return
+        return ""
 
+    lr = 0
     for db_name in ['./active.db', './historical.db']:
         conn = sqlite3.connect(db_name)
         cur = conn.cursor()
         cur.execute(create_bundles)
         cur.execute(create_odds)
+        lr = cur.lastrowid
         conn.commit()
         conn.close()
 
+
     api.full_update()
+    return str(lr)
