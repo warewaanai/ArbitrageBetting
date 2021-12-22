@@ -29,6 +29,10 @@ def setup():
         );
     """
 
+    
+    if os.path.exists('./active.db'):
+        return
+
     for db_name in ['./active.db', './historical.db']:
         conn = sqlite3.connect(db_name)
         cur = conn.cursor()
