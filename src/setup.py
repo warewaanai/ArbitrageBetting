@@ -17,7 +17,7 @@ def setup():
          );
     """
     create_odds = """
-    CREATE TABLE EXISTS ODDS
+    CREATE TABLE ODDS
         (
          BOOKMAKER  TEXT                  NOT NULL,
          REGION     TEXT                  NOT NULL,
