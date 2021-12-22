@@ -4,7 +4,7 @@ import api
 
 def setup():
     create_bundles = """
-    CREATE TABLE IF NOT EXISTS ODDS_BUNDLE
+    CREATE TABLE ODDS_BUNDLE
          (
          NAME           TEXT      NOT NULL,
          DESCRIPTION    TEXT      NOT NULL,
@@ -17,7 +17,7 @@ def setup():
          );
     """
     create_odds = """
-    CREATE TABLE IF NOT EXISTS ODDS
+    CREATE TABLE EXISTS ODDS
         (
          BOOKMAKER  TEXT                  NOT NULL,
          REGION     TEXT                  NOT NULL,
