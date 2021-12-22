@@ -1,0 +1,46 @@
+.BetCardTitle{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.BetTitleRevenue {
+    border: solid 2px;
+    border-radius: 7px;
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    color: white;
+    margin: 0;
+    height: min-content;
+}
+
+.BetTitleName {
+    font-size: 24px;
+}
+
+.LiveEvent {
+    background-color: red;
+    border-radius: 5px;
+
+    padding: 4px;
+    padding-left: 10px;
+    padding-right: 10px;
+
+    color: white;
+    font-weight: bold;
+
+    animation: LiveBlink 4s infinite;
+}
+
+@keyframes LiveBlink {
+    40% {
+        opacity: 100%;
+    }
+    50% {
+        opacity: 0%;
+    }
+    60% {
+        opacity: 100%;
+    }
+}

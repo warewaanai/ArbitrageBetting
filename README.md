@@ -1,1 +1,1 @@
-# ArbitrageBetting
+# Arbitrage Betting Platform

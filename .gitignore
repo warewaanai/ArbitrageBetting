@@ -1,0 +1,13 @@
+.vscode
+.mypy_cache
+bin
+lib
+lib64
+share
+include
+client/node_modules
+
+.env
+active.db
+historical_sports.json
+active_sports.json

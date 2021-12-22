@@ -1,0 +1,23 @@
+CREATE TABLE ODDS_BUNDLE
+         (
+         NAME           TEXT      NOT NULL,
+         DESCRIPTION    TEXT      NOT NULL,
+         API_QUERY      TEXT      NOT NULL,
+         GAME           TEXT      NOT NULL,
+         START          TEXT      NOT NULL,
+         EVENTS         TEXT      NOT NULL,
+         MARKETS        INT       NOT NULL,
+         REVENUE        FLOAT     NOT NULL
+         );
+
+CREATE TABLE ODDS
+        (
+         BOOKMAKER  TEXT                  NOT NULL,
+         REGION     TEXT                  NOT NULL,
+         ODDS       TEXT                  NOT NULL,
+         START      TEXT                  NOT NULL,
+         LASTUPDATE TEXT                  NOT NULL,
+         PREV_ENTRY INT,
+         NXT        INT
+        );
+
