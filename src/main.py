@@ -17,10 +17,6 @@ PORT = int(os.environ.get("PORT", 5000))
 
 app = Flask(__name__, static_url_path='', static_folder='../frontend_build')
 
-@app.route('/setup')
-def stup():
-    return setup()
-
 @app.route('/api/get_bundles')
 def get_bundles():
     bundles : List[Bundle] = api.get_bundles()
