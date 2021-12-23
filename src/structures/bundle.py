@@ -1,10 +1,8 @@
-from sqlite3.dbapi2 import Connection
 from datetime import datetime
-from typing import List, Tuple
+from typing import List, Set, Tuple
 from typing_extensions import Self
 
 from structures.bundled_odds import BundledOdds
-from structures.odds_data import OddsData
 
 
 #                       ROWID, NAME API_QUERY DESCRIPTION GAME START EVENTS MARKETS REVENUE
@@ -35,7 +33,7 @@ class Bundle:
         self.rowid       = rowid
 
     @staticmethod
-    def from_row(conn : Connection, row : BundleRowFormat):
+    def from_row(conn, row : BundleRowFormat):
         rowid       = row[0]
         name        = row[1]
         description = row[2]
@@ -49,7 +47,7 @@ class Bundle:
         while market_ptr != -1:
             cur = conn.cursor()
             cur.execute(
-                'SELECT rowid, * FROM ODDS WHERE ROWID=?;',
+                'SELECT * FROM ODDS WHERE ID=%s;',
                 [market_ptr]
             )
             res = cur.fetchall()
@@ -63,10 +61,10 @@ class Bundle:
 
         return Bundle(name, description, api_query, start, events, game, markets, rowid)
 
-    def unregister(self, conn : Connection, unregister_markets = False):
+    def unregister(self, conn, unregister_markets = False):
         cur = conn.cursor()
         cur.execute(
-            "DELETE FROM ODDS_BUNDLE WHERE ROWID=?;",
+            "DELETE FROM ODDS_BUNDLE WHERE ID=%s;",
             [self.rowid]
         )
 
@@ -75,7 +73,7 @@ class Bundle:
                 market.unregister(conn)
 
 
-    def register_raw(self, conn : Connection) -> int:
+    def register_raw(self, conn) -> int:
         markets_ptr = -1
         for market in self.markets:
             market.rowid = market.register_raw(conn, markets_ptr)
@@ -83,7 +81,7 @@ class Bundle:
 
         cur = conn.cursor()
         res = cur.execute(
-            'INSERT INTO ODDS_BUNDLE VALUES (?, ?, ?, ?, ?, ?, ? ,?);',
+            'INSERT INTO ODDS_BUNDLE (NAME, DESCRIPTION, API_QUERY, GAME, START, EVENTS, MARKETS, REVENUE) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);',
             (
                 self.name,
                 self.description,
@@ -95,39 +93,29 @@ class Bundle:
                 self.revenue
             )
         )
-        self.rowid = res.lastrowid
+        self.rowid = cur.lastrowid
         return self.rowid
 
 
-    def register(self, active_conn : Connection, archive_conn : Connection) -> int:
+    def register(self, active : Set[Self], archive_conn):
         # see if an old version of the bundle exists in the active db
-        active_cur = active_conn.cursor()
-        active_cur.execute(
-            "SELECT rowid, * FROM ODDS_BUNDLE WHERE NAME=? AND DESCRIPTION=? AND START=?",
-            (self.name, self.description, self.start.isoformat())
-        )
-        old_active = active_cur.fetchall()
+        old_active = [bundle for bundle in active if bundle == self]
         assert(len(old_active) <= 1)
         if len(old_active) == 1: # if yes, archive it
-            old_active_bundle = Bundle.from_row(active_conn, old_active[0])
-            old_active_bundle.archive(active_conn, archive_conn)
+            old_active_bundle = old_active[0]
+            old_active_bundle.archive(active, archive_conn)
 
         # create the new active db bundle instance
-        ret = self.register_raw(active_conn)
-        
-        active_conn.commit()
-        archive_conn.commit()
-
-        return ret
+        active.add(self)
 
 
-    def archive(self, active_conn : Connection, archive_conn : Connection):
-        self.unregister(active_conn, unregister_markets=True)
+    def archive(self, active : Set[Self], archive_conn):
+        active.discard(self);
 
         # see if an old version of the bundle exists in the historical db
         archive_cur = archive_conn.cursor()
         archive_cur.execute(
-            "SELECT rowid, * FROM ODDS_BUNDLE WHERE NAME=? AND DESCRIPTION=? AND START=?;",
+            "SELECT * FROM ODDS_BUNDLE WHERE NAME=%s AND DESCRIPTION=%s AND START=%s;",
             (self.name, self.description, self.start)
         )
         old_historical_rows = archive_cur.fetchall()
@@ -157,12 +145,6 @@ class Bundle:
         self.register_raw(archive_conn)
 
 
-
-    def append_odds(self, odds : OddsData):
-        self.markets.append(BundledOdds.from_data(odds))
-        self.revenue = arbitrage(self.markets)
-
-
     def __eq__(self, other : Self):
         cond1 = self.name == other.name
         cond2 = self.api_query == other.api_query
@@ -170,7 +152,8 @@ class Bundle:
 
         return cond1 and cond2 and cond3
 
-
+    def __hash__(self) -> int:
+        return hash((self.name, self.api_query, self.start.isoformat()))
 
 
 

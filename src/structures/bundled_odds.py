@@ -1,8 +1,5 @@
 from datetime import datetime
-from sqlite3.dbapi2 import Connection
 from typing import List, Tuple
-
-from structures.odds_data import OddsData
 
 
 #                       ROWID BOOKMAKER REGION ODDS START LASTUPDATE PREV_ENTRY NXT
@@ -36,11 +33,6 @@ class BundledOdds:
 
 
     @staticmethod
-    def from_data(data : OddsData):
-        return BundledOdds(data.bookmaker, data.region, [evt.odds for evt in data.events], data.start, data.lastupdate)
-
-
-    @staticmethod
     def from_row(row : OddsRowFormat):
         rowid      = row[0]
         bookmaker  = row[1]
@@ -53,20 +45,20 @@ class BundledOdds:
         return BundledOdds(bookmaker, region, odds, start, lastupdate, rowid, preventry)
 
 
-    def register_raw(self, conn : Connection, next : int = -1) -> int:
+    def register_raw(self, conn, next : int = -1) -> int:
         cur = conn.cursor()
-        res = cur.execute(
-            'INSERT INTO ODDS VALUES (?, ?, ?, ?, ?, ?, ?);',
+        cur.execute(
+            'INSERT INTO ODDS (BOOKMAKER, REGION, ODDS, START, LASTUPDATE, PREV_ENTRY, NXT) VALUES (%s, %s, %s, %s, %s, %s, %s);',
             (self.bookmaker, self.region, '&&'.join(map(str, self.odds)), self.start.isoformat(), self.lastupdate.isoformat(), self.preventry, next)
         )
-        self.rowid = res.lastrowid
+        self.rowid = cur.lastrowid
 
         return self.rowid
 
 
-    def unregister(self, conn : Connection, next : int = -1):
+    def unregister(self, conn):
         cur = conn.cursor()
         cur.execute(
-            'DELETE FROM ODDS WHERE ROWID=?;',
+            'DELETE FROM ODDS WHERE ID=%s;',
             [self.rowid]
         )
