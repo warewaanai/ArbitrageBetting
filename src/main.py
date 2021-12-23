@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
+from timeloop import Timeloop
 from typing import List, Set
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
@@ -59,3 +60,12 @@ if __name__ == '__main__':
     api.full_update(active, archive)
 
     app.run(port=PORT, host="0.0.0.0", debug=False)
+
+
+tl = Timeloop()
+
+@tl.job(interval=timedelta(minutes=5))
+def update():
+    api.full_update(active, archive)
+
+tl.start(block=True)
