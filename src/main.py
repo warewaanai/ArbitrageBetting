@@ -64,7 +64,7 @@ if __name__ == '__main__':
 
 tl = Timeloop()
 
-@tl.job(interval=timedelta(minutes=5))
+@tl.job(interval=timedelta(minutes=20))
 def update():
     api.full_update(active, archive)
 
