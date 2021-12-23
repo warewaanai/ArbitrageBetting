@@ -55,16 +55,15 @@ def serve(path):
 
 
 if __name__ == '__main__':
-
     api.full_update(active, archive)
-    print("Started update loop")
-    tl = Timeloop()
-    @tl.job(interval=timedelta(minutes=15))
-    def update():
-        api.full_update(active, archive)
+#   print("Started update loop")
+#   tl = Timeloop()
+#   @tl.job(interval=timedelta(minutes=15))
+#    def update():
+#       api.full_update(active, archive)
 
-    tl.start()
+#    tl.start()
 
     app.run(port=PORT, host="0.0.0.0", debug=False)
 
-    tl.stop()
+ #   tl.stop()
