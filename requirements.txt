@@ -13,6 +13,7 @@ fake-useragent==0.1.11
 filelock==3.4.0
 Flask==2.0.2
 Flask-Cors==3.0.10
+gunicorn==20.1.0
 idna==3.3
 importlib-metadata==4.8.2
 itsdangerous==2.0.1
@@ -21,10 +22,13 @@ lxml==4.7.1
 MarkupSafe==2.0.1
 mypy==0.910
 mypy-extensions==0.4.3
+mysql-connector-python==8.0.27
 parse==1.19.0
 pipenv==2021.11.23
 platformdirs==2.4.0
+protobuf==3.19.1
 pyee==8.2.2
+PyMySQL==1.0.2
 pyppeteer==0.2.6
 pyquery==1.4.3
 python-dotenv==0.19.2
