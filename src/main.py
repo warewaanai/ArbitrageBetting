@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
-from timeloop import Timeloop
+from datetime import datetime
 from typing import List, Set
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
@@ -9,7 +8,9 @@ import getdb
 import os
 
 from structures.bundle import Bundle
+from update import start_update_loop
 import api
+
 
 # setup
 load_dotenv()
@@ -17,6 +18,7 @@ load_dotenv()
 PORT = int(os.environ.get("PORT", 5000))
 
 app = Flask(__name__, static_url_path='', static_folder='../frontend_build')
+CORS(app)
 active : Set[Bundle] = set()
 archive = getdb.getArchive()
 
@@ -55,15 +57,8 @@ def serve(path):
 
 
 if __name__ == '__main__':
-    api.full_update(active, archive)
-#   print("Started update loop")
-#   tl = Timeloop()
-#   @tl.job(interval=timedelta(minutes=15))
-#    def update():
-#       api.full_update(active, archive)
+    api.full_update(active)
 
-#    tl.start()
-
+    tl = start_update_loop(active, archive)
     app.run(port=PORT, host="0.0.0.0", debug=False)
-
- #   tl.stop()
+    tl.stop()

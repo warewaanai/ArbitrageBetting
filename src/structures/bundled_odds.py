@@ -45,14 +45,15 @@ class BundledOdds:
         return BundledOdds(bookmaker, region, odds, start, lastupdate, rowid, preventry)
 
 
-    def register_raw(self, conn, next : int = -1) -> int:
+    def register_db(self, conn, next : int = -1) -> int:
         cur = conn.cursor()
         cur.execute(
             'INSERT INTO ODDS (BOOKMAKER, REGION, ODDS, START, LASTUPDATE, PREV_ENTRY, NXT) VALUES (%s, %s, %s, %s, %s, %s, %s);',
             (self.bookmaker, self.region, '&&'.join(map(str, self.odds)), self.start.isoformat(), self.lastupdate.isoformat(), self.preventry, next)
         )
         self.rowid = cur.lastrowid
-
+        cur.nextset()
+        cur.close()
         return self.rowid
 
 
@@ -62,3 +63,5 @@ class BundledOdds:
             'DELETE FROM ODDS WHERE ID=%s;',
             [self.rowid]
         )
+        cur.nextset()
+        cur.close()

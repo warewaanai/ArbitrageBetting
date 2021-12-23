@@ -51,6 +51,8 @@ class Bundle:
                 [market_ptr]
             )
             res = cur.fetchall()
+            cur.nextset()
+            cur.close()
             assert(len(res) == 1)
 
             new_market = BundledOdds.from_row(res[0])
@@ -61,22 +63,19 @@ class Bundle:
 
         return Bundle(name, description, api_query, start, events, game, markets, rowid)
 
-    def unregister(self, conn, unregister_markets = False):
+    def unregister(self, conn):
         cur = conn.cursor()
         cur.execute(
             "DELETE FROM ODDS_BUNDLE WHERE ID=%s;",
             [self.rowid]
         )
+        cur.nextset()
+        cur.close()
 
-        if unregister_markets:
-            for market in self.markets:
-                market.unregister(conn)
-
-
-    def register_raw(self, conn) -> int:
+    def register_db(self, conn) -> int:
         markets_ptr = -1
         for market in self.markets:
-            market.rowid = market.register_raw(conn, markets_ptr)
+            market.rowid = market.register_db(conn, markets_ptr)
             markets_ptr = market.rowid
 
         cur = conn.cursor()
@@ -94,55 +93,17 @@ class Bundle:
             )
         )
         self.rowid = cur.lastrowid
+        cur.nextset()
+        cur.close()
         return self.rowid
 
 
-    def register(self, active : Set[Self], archive_conn):
-        # see if an old version of the bundle exists in the active db
-        old_active = [bundle for bundle in active if bundle == self]
+    def register(self, active : Set[Self]):
+        old_active = [bundle for bundle in active.copy() if bundle == self]
         assert(len(old_active) <= 1)
         if len(old_active) == 1: # if yes, archive it
-            old_active_bundle = old_active[0]
-            old_active_bundle.archive(active, archive_conn)
-
-        # create the new active db bundle instance
+            active.discard(old_active[0])
         active.add(self)
-
-
-    def archive(self, active : Set[Self], archive_conn):
-        active.discard(self);
-
-        # see if an old version of the bundle exists in the historical db
-        archive_cur = archive_conn.cursor()
-        archive_cur.execute(
-            "SELECT * FROM ODDS_BUNDLE WHERE NAME=%s AND DESCRIPTION=%s AND START=%s;",
-            (self.name, self.description, self.start)
-        )
-        old_historical_rows = archive_cur.fetchall()
-        assert(len(old_historical_rows) <= 1)
-
-        # if yes, record the old odds instances to "link them up" in the linked list representing the bet odds progression by storing the old odds pointers in new_historical_odds, then delete the historical db entry
-        if len(old_historical_rows) == 1:
-            old_historical_bundle = Bundle.from_row(archive_conn, old_historical_rows[0])
-            old_historical_bundle.rowid = archive_cur.lastrowid
-            old_historical_bundle.unregister(archive_conn, unregister_markets=False)
-
-            new_historical_odds = {}
-
-            for market in old_historical_bundle.markets:
-                new_historical_odds[(market.bookmaker, market.region)] = market
-
-            for market in self.markets:
-                if new_historical_odds.get((market.bookmaker, market.region), None) == None:
-                    new_historical_odds[(market.bookmaker, market.region)] = market
-                else:
-                    old_market = new_historical_odds[(market.bookmaker, market.region)]
-                    market.preventry = old_market.rowid
-                    new_historical_odds[(market.bookmaker, market.region)] = market
-            self.markets = list(new_historical_odds.values())
-
-        #register the new historical bundle
-        self.register_raw(archive_conn)
 
 
     def __eq__(self, other : Self):

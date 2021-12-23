@@ -65,26 +65,3 @@ def get_odds(
             pass
 
     return bundles
-
-
-def get_all_bundles(
-        games : List[str] = sports,
-        regions : List[str] = ['eu']
-    ) -> List[Bundle]:
-
-    events = json.loads(open('active_sports.json', "r").read())["data"]
-
-    bundles : List[Bundle] = []
-    for region in regions:
-        for event in events:
-            if event["group"] in games:
-                bundles+= get_odds(event["group"], region, event["key"], f'{event["title"]} ({event["description"]})')
-
-    return bundles
-
-def get_bundles(
-        keys : List[str],
-        regions : List[str]
-    ) -> List[Bundle]:
-
-    return []
