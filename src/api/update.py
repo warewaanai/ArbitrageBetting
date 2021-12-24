@@ -164,6 +164,6 @@ def full_update(active : Set[Bundle], archive_conn = None):
 
     if archive_conn != None:
         print("Archiving...")
-        archive(archive_conn)
+        Thread(target=archive, args=(archive_conn,)).start()
 
     print("Full update completed")

@@ -83,12 +83,8 @@ class ArbitrageDetails extends React.Component {
           state.choices[event_idx].bookmaker = value;
 
           state.ha = 0;
-          for (const [key, entry] of Object.entries(state.choices)) {
+          for (const [key, entry] of Object.entries(state.choices))
             state.ha+= 1 / this.market_dict[entry.bookmaker].odds[key];
-            console.log( entry.bookmaker);
-            console.log( this.market_dict[entry.bookmaker].odds[key]);
-            console.log( this.market_dict[entry.bookmaker]);
-          }
           state.ha = 1 / state.ha;
 
           for (const [key, entry] of Object.entries(state.choices)) {
@@ -178,8 +174,8 @@ class ArbitrageDetails extends React.Component {
           </Col>
         </Row>
         <Table columns={this.columns} dataSource={[choices_dom]} pagination={false}></Table>
-
-        { this.state.manual ? null : <Button danger onClick={() => this.setState({manual: true})}> Set Odds Manually </Button>  }
+        <br />
+        { this.state.manual ? null : <Button danger onClick={() => this.setState({manual: true})}> Set Bet Values Manually </Button>  }
       </Card>
     </>
   }
@@ -235,7 +231,7 @@ class CardDetails extends React.Component {
       allData.push({
         key: choice_idx,
         bookmaker: <><img width={20} alt={market.region} src={flags[market.region]}/> {market.bookmaker}</>,
-        last_update: market.last_update,
+        last_update: new Date(market.last_update + "Z").toLocaleString(),
         ...odds
       })
     });
@@ -280,7 +276,7 @@ class BetCard extends React.Component {
     const start_date = new Date(this.props.start_time);
     const start = this.props.live ?
       <span className='LiveEvent'>LIVE BET</span> :
-      <> {start_date.toISOString()} </>
+      <> {start_date.toLocaleString()} </>
 
     return <div className='BetCardTitle'>
       <div className='BetTitleData'>

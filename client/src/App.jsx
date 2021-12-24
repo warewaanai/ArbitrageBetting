@@ -25,6 +25,7 @@ class App extends React.Component {
 
 
   render() {
+    console.log(this.state.bets)
     return (
       <div id="App">
         <AppHeader />

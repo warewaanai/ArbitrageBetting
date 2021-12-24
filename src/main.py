@@ -57,7 +57,7 @@ def serve(path):
 
 
 if __name__ == '__main__':
-    api.full_update(active)
+    api.full_update(active, archive)
 
     tl = start_update_loop(active, archive)
     app.run(port=PORT, host="0.0.0.0", debug=False)
