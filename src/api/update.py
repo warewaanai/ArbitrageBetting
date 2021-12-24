@@ -77,8 +77,7 @@ def archive(archive_conn):
 def update(
         active : Set[Bundle],
         keys : List[str],
-        regions : List[str] = ['eu'],
-        result_dump : Optional[List[Bundle]] = None
+        regions : List[str] = ['uk']
         ):
 
     global active_updates, active_events
@@ -156,8 +155,7 @@ def full_update(active : Set[Bundle], archive_conn = None):
     update_keys = list(dict.fromkeys(update_keys))
 
     old_bundles : List[Bundle] = list(active).copy()
-    new_bundles : List[Bundle] = []
-    update(active, update_keys, result_dump=new_bundles)
+    new_bundles : List[Bundle] = update(active, update_keys)
 
 
     for old_bundle in old_bundles:

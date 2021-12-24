@@ -12,10 +12,10 @@ class BetListing extends React.Component {
               <ul>
                 <li>Implement the odds history functionality</li>
                 <li>Websocket live bet reloading</li>
-                <li>Implement asynchronous API requests</li>
+                <li><s>Implement asynchronous API requests</s></li>
                 <li>Implement bet filtering</li>
                 <li>Arbitrage calculator UX improvement</li>
-                <li>Migrate to mysql</li>
+                <li><s>Migrate to mysql</s></li>
                 <li>Implement something to present the historical data stats</li>
                 <li>Write the arbitrage tutorial</li>
               </ul>

@@ -41,7 +41,6 @@ class ArbitrageDetails extends React.Component {
     });
 
     ha = 1 / ha;
-
     
     props.events.forEach((evt, event_idx) => {
       const column = {
@@ -58,8 +57,7 @@ class ArbitrageDetails extends React.Component {
 
       choices[event_idx] = {
         value: Math.floor(default_investment / market_dict[best.bookmaker].odds[event_idx] * ha),
-        bookmaker: best.bookmaker,
-        profit: Math.floor(Math.floor(default_investment / market_dict[best.bookmaker].odds[event_idx] * ha) * market_dict[best.bookmaker].odds[event_idx])
+        bookmaker: best.bookmaker
       }
 
       investment+= choices[event_idx].value;
@@ -82,33 +80,33 @@ class ArbitrageDetails extends React.Component {
       switch (event) {
       case 'bookmaker': {
         this.setState(state => {
+          state.choices[event_idx].bookmaker = value;
+
           state.ha = 0;
-          for (const [_, entry] of Object.entries(state.choices))
-            state.ha+= 1 / this.market_dict[entry.bookmaker].odds[event_idx];
+          for (const [key, entry] of Object.entries(state.choices)) {
+            state.ha+= 1 / this.market_dict[entry.bookmaker].odds[key];
+            console.log( entry.bookmaker);
+            console.log( this.market_dict[entry.bookmaker].odds[key]);
+            console.log( this.market_dict[entry.bookmaker]);
+          }
           state.ha = 1 / state.ha;
 
-          state.choices[event_idx] = {
-            bookmaker: value,
-            value: Math.floor(state.investment / this.market_dict[value].odds[event_idx] * state.ha),
-            profit: Math.floor(Math.floor(state.investment / this.market_dict[value].odds[event_idx] * state.ha) * this.market_dict[value].odds[event_idx])
+          for (const [key, entry] of Object.entries(state.choices)) {
+              const bookmaker = entry.bookmaker;
+              state.choices[key].value = Math.floor(state.investment / this.market_dict[bookmaker].odds[key] * state.ha);
           }
+          console.log(this.market_dict);
+          
           return state;
         })
         break;
       }
       case 'bet value': {
         value = parseFloat(value);
-
         this.setState(state => {
-          const bookmaker = state.choices[event_idx].bookmaker;
-          state.choices[event_idx] = {
-            bookmaker: bookmaker,
-            value: value,
-            profit: value * this.market_dict[bookmaker].odds[event_idx]
-          }
-          state.investment = 0;
-          for (const [_, entry] of Object.entries(state.choices))
-            state.investment+= entry.value;
+          state.investment-= state.choices[event_idx].value
+          state.choices[event_idx].value = value
+          state.investment+= value
           return state;
         })
         break;
@@ -121,7 +119,6 @@ class ArbitrageDetails extends React.Component {
           for (const [key, entry] of Object.entries(state.choices)) {
             const bookmaker = state.choices[key].bookmaker;
             state.choices[key].value = Math.floor(value / this.market_dict[bookmaker].odds[key] * state.ha);
-            state.choices[key].profit = Math.floor(state.choices[key].value * this.market_dict[bookmaker].odds[key]);
           }
           return state;
         });
@@ -134,7 +131,6 @@ class ArbitrageDetails extends React.Component {
   render() {
     let choices_dom = {};
     this.props.events.forEach((evt, idx) => {
-      const choice_idx = idx.toString();
 
       let best = this.props.markets[0];
       this.props.markets.forEach((market) => {
@@ -142,13 +138,13 @@ class ArbitrageDetails extends React.Component {
           best = market;
       });
 
-      choices_dom[choice_idx] = <div key={choice_idx}>
+      choices_dom[idx] = <div key={idx}>
         <Row>
           <Col span={8}>
             <h2>Bookmaker: </h2>
           </Col>
           <Col>
-            <Select style={{width: 170}} defaultValue={ best.bookmaker } onChange={value => this.input_event('bookmaker', choice_idx, value)}>
+            <Select style={{width: 170}} defaultValue={ best.bookmaker } onChange={value => this.input_event('bookmaker', idx, value)}>
               { this.props.markets.map(market => <Option key={market.bookmaker}> <img width={20} alt={market.region} src={flags[market.region]}/> {market.bookmaker} </Option>) }
             </Select>
           </Col>
@@ -159,14 +155,14 @@ class ArbitrageDetails extends React.Component {
           </Col>
           <Col>
             {this.state.manual ?
-              <InputNumber value={this.state.choices[choice_idx].value} onChange={value => this.input_event('bet value', choice_idx, value) }/> :
-              <h2>{this.state.choices[choice_idx].value}</h2>
+              <InputNumber value={this.state.choices[idx].value} onChange={value => this.input_event('bet value', idx, value) }/> :
+              <h2>{this.state.choices[idx].value}</h2>
             }
           </Col>
         </Row>
         <hr />
         
-        <h2>Outcome revenue: { Math.floor(this.state.choices[idx].profit) }</h2>
+        <h2>Outcome revenue: { Math.floor(Math.floor(this.state.choices[idx].value) * this.market_dict[this.state.choices[idx].bookmaker].odds[idx]) }</h2>
       </div>
     });
     
@@ -224,7 +220,7 @@ class CardDetails extends React.Component {
         sorter: (a, b) => (parseFloat(a[choice_idx]) - parseFloat(b[choice_idx])),
         sortDirections: ['ascend', 'descend', 'ascend']
       }
-  
+
       columns.push(column);
     });
   
