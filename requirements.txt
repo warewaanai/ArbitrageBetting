@@ -2,6 +2,7 @@ appdirs==1.4.4
 APScheduler==3.8.1
 backports.entry-points-selectable==1.1.1
 backports.zoneinfo==0.2.1
+bidict==0.21.4
 bs4==0.0.1
 certifi==2021.10.8
 charset-normalizer==2.0.9
@@ -14,6 +15,7 @@ filelock==3.4.0
 Flask==2.0.2
 Flask-Cors==3.0.10
 gunicorn==20.1.0
+h11==0.12.0
 idna==3.3
 importlib-metadata==4.8.2
 itsdangerous==2.0.1
@@ -32,10 +34,13 @@ PyMySQL==1.0.2
 pyppeteer==0.2.6
 pyquery==1.4.3
 python-dotenv==0.19.2
+python-engineio==4.3.0
+python-socketio==5.5.0
 pytz==2021.3
 pytz-deprecation-shim==0.1.0.post0
 requests==2.26.0
 requests-html==0.10.0
+simple-websocket==0.5.0
 six==1.16.0
 soupsieve==2.3.1
 timeloop==1.0.2
@@ -51,4 +56,5 @@ virtualenv-clone==0.5.7
 w3lib==1.22.0
 websockets==9.1
 Werkzeug==2.0.2
+wsproto==1.0.0
 zipp==3.6.0

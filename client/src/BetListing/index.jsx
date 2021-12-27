@@ -1,6 +1,7 @@
 import { Button, Card, Row, Col, Slider, Checkbox } from 'antd';
 import * as React from 'react';
-import { BetCard } from './bet-card';
+import BetCard from '../BetCard'
+import { getCookie, setCookie } from '../cookie-manager';
 
 
 const sports = [
@@ -19,34 +20,37 @@ const sports = [
 
 const bookmakers = [
   '888sport',
-  'betfred',
-  'betvictor',
-  'betfair',
-  'betway',
-  'coral',
-  'ladbrokes',
-  'livescorebet',
-  'marathonbet',
-  'matchbook',
-  'paddypower',
-  'skybet',
-  'unibet',
-  'virginbet',
-  'williamhill'
+  'Betfred',
+  'Bet Victor',
+  'Betfair',
+  'Betway',
+  'Coral',
+  'Ladbrokes',
+  'Livescore Bet',
+  'Marathon Bet',
+  'Matchbook',
+  'Nordic Bet',
+  'Paddy Power',
+  'Sky Bet',
+  'Unibet',
+  'Virgin Bet',
+  'William Hill'
 ]
+
+const INF = 1e9;
 
 const revenue = (bet) => {
   let ha = 0.0;
-  bet.events.forEach((_, event_idx) => {
+  bet.outcomes.forEach(outcome => {
     let best = 0.0;
     bet.markets.forEach(market => {
-      if (best < market.odds[event_idx]) // find best to compute the harmonic average
-        best = market.odds[event_idx];
+      if (best < market.odds[outcome].odds && market.active) // find best to compute the harmonic average
+        best = market.odds[outcome].odds
     });
     ha+= 1 / best;
   });
 
-  if (ha === NaN || ha === Infinity)
+  if (ha === NaN || ha === INF)
     return 0;
   else
     return 1 / ha - 1;
@@ -56,23 +60,32 @@ class SearchCard extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      active_bets: props.bets.map(obj => JSON.parse(JSON.stringify(obj))),
-      active_bookmakers: bookmakers,
-      active_sports: sports,
-      profit_range: [0.5, Infinity],
-      live: false
+    if (getCookie('app') == undefined) {
+      setCookie('app', JSON.stringify({
+        settings: {
+          active_sports: sports,
+          active_bookmakers: bookmakers,
+          profit_range: [0.5, INF],
+          live: true
+        }
+      }));
     }
+
+    let cookieObj = JSON.parse(getCookie('app'));
+    this.state = {
+      active: false,
+      ...cookieObj.settings
+    }
+    this.state.active_bets = props.bets.map(obj => JSON.parse(JSON.stringify(obj))).filter(raw_bet => this.state.live ? true : raw_bet.live);
   }
 
-
-  componentDidUpdate() {
+  filterAction() {
     const compositeFilter = (bets) => {
       return  bets.filter(raw_bet => this.state.live ? true : !raw_bet.live) // live filter
-                  .filter(raw_bet => this.state.active_sports.includes(raw_bet.game)) // sports filter
+                  .filter(raw_bet => this.state.active_sports.includes(raw_bet.sport)) // sports filter
                   .map(raw_bet => { // bookmaker filter
                     let bet = raw_bet;
-                    bet.markets = raw_bet.markets.filter(market => this.state.active_bookmakers.includes(market.bookmaker))
+                    bet.markets = bet.markets.filter(market => this.state.active_bookmakers.includes(market.bookmaker));
                     return bet;
                   })
                   .map(raw_bet => {
@@ -84,12 +97,14 @@ class SearchCard extends React.Component {
                   .sort((a, b) => b.revenue - a.revenue)
     }
 
-    console.log(this.state.profit_range)
-
-
-    console.log({
-      propbets: this.props.bets,
-    });
+    setCookie('app', JSON.stringify({
+      settings: {
+        active_sports: this.state.active_sports,
+        active_bookmakers: this.state.active_bookmakers,
+        live: this.state.live,
+        profit_range: this.state.profit_range
+      }
+    }))
 
     const new_bets = compositeFilter(this.props.bets.map(obj => JSON.parse(JSON.stringify(obj)))).map(obj => JSON.parse(JSON.stringify(obj)));
 
@@ -97,8 +112,16 @@ class SearchCard extends React.Component {
 
     if (!equals(this.state.active_bets, new_bets)) {
       this.setState({active_bets: new_bets.map(obj => JSON.parse(JSON.stringify(obj)))});
-      this.props.onAction(new_bets);
+      this.props.onAction(new_bets.map(obj => JSON.parse(JSON.stringify(obj))));
     }
+  }
+
+  componentDidMount() {
+    this.filterAction();
+  }
+
+  componentDidUpdate() {
+    this.filterAction();
   }
 
   toggleBookmaker(bookmaker) {
@@ -129,48 +152,49 @@ class SearchCard extends React.Component {
     })
   }
 
-  toggleLive() {
-    this.setState({
-      live: !this.state.live
-    })
-  }
-
   render() {
     return <>
-      <Card type="inner">
-        <Row>
-          <Col>
-            <span style={{fontSize: "20px", marginRight: "50px"}}>Show live bets:</span>
-            <Checkbox/>
-          </Col>
-        </Row>
-      </Card>
-      <Card type="inner">
-        <Row>
-          <Col span={4}>
-            <h2>Profit Range:</h2>
-          </Col>
-          <Col span={7}>
-            <Slider range onChange={(value) => this.setState({ profit_range: value })} min={0.5} max={25} defaultValue={[0.5, 25]} step={0.1} marks={{0.5: '0.5%', 25: '+25%'}}></Slider>
-          </Col>
-        </Row>
-      </Card>
-      <Card type="inner">
-        <Row>
-        <Col span={12}>
-            <h2>Bookmakers:</h2>
-            {
-              bookmakers.map(bookmaker => <div key={bookmaker}>  <Checkbox defaultChecked={true} onChange={() => this.toggleBookmaker(bookmaker)} /> {bookmaker}  <br/></div>)
-            }
-          </Col>
-          <Col span={12}>
-            <h2>Sports:</h2>
-            {
-              sports.map(sport => <div key={sport}>  <Checkbox defaultChecked={true} onChange={() => this.toggleSport(sport)} /> {sport}  <br/></div>)
-            }
-          </Col>
+      <Card>
+        {this.state.active ? <>
+          <Card type="inner">
+            <Row>
+              <Col>
+                <span style={{fontSize: "20px", marginRight: "50px"}}>Show live bets:</span>
+                <Checkbox defaultChecked={this.state.live} onChange={() => this.setState({ live: !this.state.live })}/>
+              </Col>
+            </Row>
+          </Card>
+          <Card type="inner">
+            <Row>
+              <Col span={4}>
+                <h2>Profit Range:</h2>
+              </Col>
+              <Col span={7}>
+                <Slider range onChange={(value) => this.setState({ profit_range: [value[0], value[1] == 25 ? INF : value[1]] })} min={0.5} max={25} defaultValue={this.state.profit_range} step={0.1} marks={{0.5: '0.5%', 25: '+25%'}}></Slider>
+              </Col>
+            </Row>
+          </Card>
+          <Card type="inner">
+            <Row>
+            <Col span={12}>
+                <h2>Bookmakers:</h2>
+                {
+                  bookmakers.map(bookmaker => <div key={bookmaker}>  <Checkbox defaultChecked={this.state.active_bookmakers.includes(bookmaker)} onChange={() => this.toggleBookmaker(bookmaker)} /> {bookmaker}  <br/></div>)
+                }
+              </Col>
+              <Col span={12}>
+                <h2>Sports:</h2>
+                {
+                  sports.map(sport => <div key={sport}>  <Checkbox defaultChecked={this.state.active_sports.includes(sport)} onChange={() => this.toggleSport(sport)} /> {sport}  <br/></div>)
+                }
+              </Col>
 
-        </Row>
+            </Row>
+          </Card>
+          </> :
+          null
+        }
+        <Button onClick={() => this.setState({active: !this.state.active})}> Toggle Advanced search </Button>
       </Card>
     </>
   }
@@ -182,52 +206,24 @@ class BetListing extends React.Component {
     super(props);
     this.state = {
       filter: false,
-      active_bets: this.props.bets.sort((a, b) => revenue(b) - revenue(a)).filter(bet => bet.revenue >= 0.005)
+      updated: false,
+      active_bets: this.props.bets.sort((a, b) => revenue(b) - revenue(a)).filter(bet => revenue(bet) >= 0.005)
     }
-  }
-
-  componentDidUpdate() {
-    console.log(this.props);
-    
-    const equals = (a, b) => a.length === b.length && a.every((v, i) => JSON.stringify(a[i]) === JSON.stringify(b[i]));
-    const prop_bets = this.props.bets.sort((a, b) => revenue(b) - revenue(a)).filter(bet => bet.revenue >= 0.005);
-
-    if (!equals(prop_bets, this.state.active_bets))
-      this.setState({
-        active_bets: this.props.bets.sort((a, b) => revenue(b) - revenue(a)).filter(bet => bet.revenue >= 0.005)
-      })
   }
 
   render() {
       return (<>
           <div id="BetFilter">
-          <Card>
-            <h1>To Do</h1>
-            <ul>
-              <li>Implement the raw calculator and stats routes</li>
-              <li>Arbitrage calculator UX improvement</li>
-              <li>Implement the odds history functionality</li>
-              <li>Implement something to present the historical data stats</li>
-              <li>Websocket live bet reloading</li>
-              <li>User registration</li>
-              <li>Ad integration</li>
-              <li>Arbitrage tutorial</li>
-            </ul>
-          </Card>
 
-          <Card>
-            { this.state.filter ? <SearchCard onAction={(new_bets) => this.setState({active_bets: new_bets})} bets={this.props.bets} /> : null }
-            { this.state.filter ? null : <Button onClick={() => this.setState({filter: true})}> Toggle Advanced search </Button> }
-          </Card>
+          <SearchCard onAction={(new_bets) => { this.setState({active_bets: new_bets}) }} bets={this.props.bets} />
 
           </div>
           <br/>
           <br/>
           <br/>
           <div id="BetListing">
-            {
-              this.state.active_bets.map(raw_bet => <BetCard {...raw_bet} key={raw_bet.name} />)
-            }
+            { this.state.active_bets.map(raw_bet => <BetCard {...raw_bet} key={raw_bet.name} />) }
+            { this.state.active_bets.length === 0 ? <h1>No results</h1> : null }
           </div>
         </>);
   }
