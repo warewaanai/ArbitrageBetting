@@ -80,7 +80,7 @@ class EventPage extends React.Component {
       })
 
       if (this.state.bet !== null) {
-        this.ws = new WebSocket(`ws://thawing-brushlands-00177.herokuapp.com/api/get_socket/${this.state.bet.id.replace('"', '').replace('"', '')}`);
+        this.ws = new WebSocket(`ws://localhost:5000/api/get_socket/${this.state.bet.id.replace('"', '').replace('"', '')}`);
         this.ws.addEventListener('message', (evt) => {
           let bet = JSON.parse(evt.data);
 
