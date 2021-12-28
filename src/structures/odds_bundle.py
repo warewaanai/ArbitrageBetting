@@ -163,6 +163,7 @@ class ActiveBundles:
         self.active_set : Set[OddsBundle] = set()
         self.archive_set : Set[OddsBundle] = set()
         self.fromId : Dict[int, OddsBundle] = {}
+        self.updating : bool = False
         
 
     def add(self, bundle : OddsBundle):

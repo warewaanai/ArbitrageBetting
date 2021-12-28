@@ -25,6 +25,11 @@ def start_update_loop(active : ActiveBundles):
                 last_active  = datetime.utcnow()
             time.sleep(1)
 
-    loopthread = Thread(target=loop)
-    loopthread.start()
-    return loopthread
+
+    if active.updating == False:
+        active.updating = True
+        loopthread = Thread(target=loop)
+        loopthread.start()
+        return loopthread
+    else:
+        return None
