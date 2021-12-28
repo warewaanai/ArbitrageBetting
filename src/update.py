@@ -12,7 +12,7 @@ def start_update_loop(active : ActiveBundles):
     def full_update():
         api.full_update(active)
 
-    @tl.job(interval=timedelta(seconds=40))
+    @tl.job(interval=timedelta(seconds=20))
     def live_update():
         api.update_live(active)
 
