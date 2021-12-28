@@ -86,6 +86,13 @@ class OddsBundle:
             for outcome in market.odds.keys():
                 odds_dict[outcome] = market.odds[outcome].toDict()
 
+
+            market_history = []
+            if self.start < datetime.utcnow() or not market.active:
+                market_history = [odds.toDict() for odds in self.markets[bookmaker].history]
+            else:
+                market_history = [odds.toDict() for odds in self.markets[bookmaker].history if odds.last_update > self.start]
+
             markets.append({
                 'bookmaker': bookmaker.name,
                 'active': market.active,
@@ -93,7 +100,7 @@ class OddsBundle:
                 'outcomes' : self.outcomes,
                 'region': bookmaker.region,
                 'last_update': market.lastupdate.isoformat(),
-                'history': [odds.toDict() for odds in self.markets[bookmaker].history]
+                'history': market_history
             })
 
         return json.dumps({
