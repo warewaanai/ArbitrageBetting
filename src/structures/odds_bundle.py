@@ -1,6 +1,6 @@
 import json
 from simple_websocket import Server
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Dict, List, Optional, Set, Tuple, cast
 from typing_extensions import Self
 from structures import market
@@ -34,6 +34,11 @@ class OddsBundle:
         self.max_revenue = 0
         self.id = 0
 
+        if datetime.utcnow() > self.start:
+            for bookmaker in self.markets:
+                if datetime.utcnow() - self.markets[bookmaker].lastupdate > timedelta(minutes=4):
+                    self.markets[bookmaker].active = False
+
     @staticmethod
     def from_row(row : BundleRowFormat):
         return OddsBundle(row[2], row[4], row[5], datetime.fromisoformat(row[3]), row[7].split('&&&'), row[6], {})
@@ -64,6 +69,12 @@ class OddsBundle:
 
     def toJSON(self) -> str:
         markets : List = []
+        
+        if datetime.utcnow() > self.start:
+            for bookmaker in self.markets:
+                if datetime.utcnow() - self.markets[bookmaker].lastupdate > timedelta(minutes=4):
+                    self.markets[bookmaker].active = False
+        
         for bookmaker in self.markets.keys():
             market = self.markets[bookmaker]
 
@@ -97,6 +108,11 @@ class OddsBundle:
     def arbitrage(self) -> float:
         if len(self.markets) == 0 or len(self.outcomes) == 0:
             return 0.0
+
+        if datetime.utcnow() > self.start:
+            for bookmaker in self.markets:
+                if datetime.utcnow() - self.markets[bookmaker].lastupdate > timedelta(minutes=4):
+                    self.markets[bookmaker].active = False
 
         something = False
         best_odds : Dict[Outcome, float] = {}
