@@ -74,7 +74,7 @@ def serve_index(path):
     return send_from_directory(str(app.static_folder), 'index.html')
 
 @app.route("/statistics/")
-def serve_stats(path):
+def serve_stats():
     return send_from_directory(str(app.static_folder), 'index.html')
 
 @app.route("/event/<id>")
