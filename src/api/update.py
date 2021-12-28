@@ -47,7 +47,7 @@ def update(
 
     for bundle in new_bundles:
         active.add(bundle)
-        if bundle.arbitrage() > 0.2:
+        if bundle.arbitrage() >= 0.12:
             active.add_archive(bundle.copy())
 
     return new_bundles
