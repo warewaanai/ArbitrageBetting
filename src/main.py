@@ -81,8 +81,8 @@ def serve_stats():
 def serve_event(id):
     return send_from_directory(str(app.static_folder), 'index.html')
 
+api.full_update(active)
+start_update_loop(active)
 
 if __name__ == '__main__':
-    api.full_update(active)
-    tl = start_update_loop(active)
     app.run(port=PORT, host="0.0.0.0", debug=False)

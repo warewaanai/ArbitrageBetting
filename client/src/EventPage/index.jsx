@@ -72,6 +72,7 @@ class EventPage extends React.Component {
   componentDidMount() {
     fetch(`/api/get_bundle/${this.props.params.id}`).then(res => res.json()).then(bet => {
       bet.markets = bet.markets.filter(market => this.state.active_bookmakers.includes(market.bookmaker));
+      bet.id = bet.id.replace('"', '').replace('"', '');
       if (bet.live)
         bet.markets = bet.markets.filter(market => market.active);
       this.setState({
@@ -84,6 +85,8 @@ class EventPage extends React.Component {
           let bet = JSON.parse(evt.data);
 
           bet.markets = bet.markets.filter(market => this.state.active_bookmakers.includes(market.bookmaker));
+          bet.id = bet.id.replace('"', '').replace('"', '');
+
           if (bet.live)
             bet.markets = bet.markets.filter(market => market.active);
 

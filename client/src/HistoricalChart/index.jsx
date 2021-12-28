@@ -43,22 +43,36 @@ class HistoricalChart extends React.Component {
     super(props);
 
     this.niceColours = [
-      'rgba(0, 200, 255)',
-      'rgba(0, 200, 100)',
-      'rgba(255, 200, 0)',
-      'rgba(127, 0, 255)',
+      'rgb(148, 0, 211)',
+      'rgb(75, 0, 130)',
+      'rgb(0, 0, 255)',
+      'rgb(0, 255, 0)',
+      'rgb(255, 255, 0)',
+      'rgb(155, 193, 60)',
+      'rgb(246,153,205)'
     ]
 
     this.state = {
       props: props,
-      bookmaker_graphs: [{
-        bookmaker: 0,
-        outcome: this.props.outcomes[0],
-      }],
+      bookmaker_graphs_on: true,
+      bookmaker_graphs: this.props.markets.map((market, midx) => { return {
+        bookmaker: midx,
+      }}),
+      outcome: this.props.outcomes[0],
       arbitrage_graph: true
     }
   }
 
+  componentDidUpdate() {
+    if (this.props != this.state.props) {
+      this.setState({
+        props: this.props,
+        bookmaker_graphs: this.props.markets.map((market, midx) => { return {
+          bookmaker: midx,
+        }})
+      })
+    }
+  }
 
   render() {
     const labels = [
@@ -70,20 +84,23 @@ class HistoricalChart extends React.Component {
       'June',
     ];
 
-    let graphs_data = this.state.bookmaker_graphs.map((graph, graph_idx) => {
-      let history = this.props.markets[graph.bookmaker].history.filter(update => update.outcome == graph.outcome);
-      history.push(this.props.markets[graph.bookmaker].odds[graph.outcome]);
+    let graphs_data = [];
+    const getBookmakerGraphs = () => {
+      graphs_data = this.state.bookmaker_graphs.map((graph, graph_idx) => {
+        let history = this.props.markets[graph.bookmaker].history.filter(update => update.outcome == this.state.outcome);
+        history.push(this.props.markets[graph.bookmaker].odds[this.state.outcome]);
 
-      return {
-        label: `${this.props.markets[graph.bookmaker].bookmaker} - ${graph.outcome}`,
-        backgroundColor: this.niceColours[graph_idx % this.niceColours.length],
-        borderColor: this.niceColours[graph_idx % this.niceColours.length],
-        data: history.map(update => ({x: update.last_update, y: update.odds })),
-        showLine: true,
-        showLabel: true,
-        tension: 0.2
-      };
-    });
+        return {
+          label: `${this.props.markets[graph.bookmaker].bookmaker}`,
+          backgroundColor: this.niceColours[graph_idx % this.niceColours.length],
+          borderColor: this.niceColours[graph_idx % this.niceColours.length],
+          data: history.map(update => ({x: update.last_update, y: update.odds })),
+          showLine: true,
+          showLabel: true,
+          tension: 0.2
+        };
+      });
+    }
 
     const getArbGraph = () => {
       let history = [];
@@ -159,6 +176,9 @@ class HistoricalChart extends React.Component {
       })
     }
 
+    if (this.state.bookmaker_graphs_on)
+      getBookmakerGraphs();
+
     if (this.state.arbitrage_graph)
       getArbGraph();
 
@@ -181,60 +201,27 @@ class HistoricalChart extends React.Component {
     console.log(this.state);
 
     return (<>
-      { // Market graph
-        this.state.bookmaker_graphs.map((graph, graph_idx) => <>
-          <Card type='inner'>
-            <Row>
-              <Col span={3}>
-                <h2>Bookmaker: </h2>
-              </Col>
-              <Col>
-                <Select style={{width: 170}} defaultValue={ '0' } onChange={(value) => this.setState(state => {state.bookmaker_graphs[graph_idx].bookmaker = value; return state; } ) } >
-                  { this.props.markets.map((market, idx) => <Option key={ idx.toString() } > <img width={20} alt={market.region} src={flags[market.region]}/> {market.bookmaker} </Option>) }
-                </Select>
-              </Col>
-            </Row>
-            <Row>
-              <Col span={3}>
-                <h2>Event: </h2>
-              </Col>
-              <Col>
-                <Select style={{width: 170}} defaultValue={ this.props.outcomes[0] }  onChange={(value) => this.setState(state => {state.bookmaker_graphs[graph_idx].outcome = value; return state; } ) }>
-                  { this.props.outcomes.map(outcome => <Option key={outcome}> {outcome} </Option>) }
-                </Select>
-              </Col>
-            </Row>
-            <Button danger onClick={() => {
-              this.setState(state => {
-                return {
-                  bookmaker_graphs: (this.state.bookmaker_graphs.filter((_, idx) => idx !== graph_idx))
-                }
-              });
-            }}>
-              Remove market
-            </Button>
-          </Card>
-          <br />
-        </>) 
-      }
-
-      <Button onClick={() => this.setState(state => {
-        let graphs = state.bookmaker_graphs.map(e => JSON.parse(JSON.stringify(e)))
-        graphs.push({bookmaker: 0, outcome: this.props.outcomes[0]})
-        return {
-          bookmaker_graphs: graphs
-        }
-      })}>
-      Add new market
-      </Button>
-
-      <br />
-      <br />
-      <Button onClick={() => this.setState(state => {return {arbitrage_graph: !this.state.arbitrage_graph}} )}> Toggle arbitrage profit graph </Button>
+      <Card type='inner'>
+        <Row>
+          <Col span={2}>
+            <h2>Event: </h2>
+          </Col>
+          <Col>
+            <Select style={{width: 170}} defaultValue={ this.props.outcomes[0] }  onChange={(value) => this.setState({outcome: value})} >
+              { this.props.outcomes.map(outcome => <Option key={outcome}> {outcome} </Option>) }
+            </Select>
+          </Col>
+        </Row>
+      </Card>
       <br />
           
-      <Scatter options={options} data={data} />
       <h3>*The timescale timezone is UTC</h3>
+      <br />
+
+      <Scatter options={options} data={data} />
+      <Button onClick={() => this.setState(state => {return {arbitrage_graph: !this.state.arbitrage_graph}} )}> Toggle arbitrage profit graph </Button>
+      <Button onClick={() => this.setState(state => {return {bookmaker_graphs_on: !this.state.bookmaker_graphs_on}} )}> Toggle bookmakers graphs </Button>
+      <br />
       </>);
   }
 }

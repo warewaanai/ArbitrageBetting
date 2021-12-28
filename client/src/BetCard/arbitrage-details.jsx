@@ -127,20 +127,24 @@ class ArbitrageDetails extends React.Component {
 
     switch (event) {
       case 'bookmaker': {
-        this.setState(state => {
+        this.setState(_state => {
+          let state = JSON.parse(JSON.stringify(_state));
+
           state.choices[outcome].bookmaker = value;
 
           state.ha = 0;
-          for (const [key, entry] of Object.entries(state.choices))
-            state.ha += 1 / this.state.market_dict[entry.bookmaker].odds[key].odds;
+          for (const [outcome, entry] of Object.entries(state.choices))
+            state.ha += 1 / this.state.market_dict[entry.bookmaker].odds[outcome].odds;
           state.ha = 1 / state.ha;
 
-          state.investment = 0;
-          for (const [key, entry] of Object.entries(state.choices)) {
+          let investment = 0;
+          for (const [outcome, entry] of Object.entries(state.choices)) {
             const bookmaker = entry.bookmaker;
-            state.choices[key].value = Math.ceil(state.investment / this.state.market_dict[bookmaker].odds[key].odds * state.ha);
-            state.investment+= state.choices[key].value;
+            state.choices[outcome].value = Math.ceil(state.investment / this.state.market_dict[bookmaker].odds[outcome].odds * state.ha);
+            investment+= state.choices[outcome].value;
           }
+          state.investment = investment;
+          console.log(state);
 
           return state;
         })

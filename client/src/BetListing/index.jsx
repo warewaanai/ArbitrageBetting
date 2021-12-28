@@ -71,10 +71,21 @@ class SearchCard extends React.Component {
       }));
     }
 
-    let cookieObj = JSON.parse(getCookie('app'));
-    this.state = {
-      active: false,
-      ...cookieObj.settings
+    if (getCookie('app') !== undefined) {
+      let cookieObj = JSON.parse(getCookie('app'));
+      this.state = {
+        active: false,
+        ...cookieObj.settings
+      }
+    }
+    else {
+      this.state = {
+        active: false,
+        active_sports: sports,
+        active_bookmakers: bookmakers,
+        profit_range: [0.5, INF],
+        live: true
+      }
     }
     this.state.active_bets = props.bets.map(obj => JSON.parse(JSON.stringify(obj))).filter(raw_bet => this.state.live ? true : raw_bet.live);
   }
