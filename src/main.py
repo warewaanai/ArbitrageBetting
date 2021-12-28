@@ -53,14 +53,16 @@ def get_socket(id):
         id = int(id)
     except:
         return "{}", 400
-        
+
     ws = simple_websocket.Server(request.environ, max_message_size=0, ) # is the max_message size blocking sends?
     try:
         while True:
             bundle = active.fromId.get(id, None)
             if bundle == None:
-               break
+                print("no corresponding id")
+                break
             if bundle.start > datetime.utcnow():
+                print("event not live")
                 break
             ws.send(bundle.toJSON())
             time.sleep(10)
