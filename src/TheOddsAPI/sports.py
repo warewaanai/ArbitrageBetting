@@ -25,7 +25,7 @@ def update_active_sports():
     active_sports = get_active_sports(cached = False)
     with open("active_sports.json", "w") as fo:
         fo.write(json.dumps({
-            'lastupdate': datetime.now().isoformat(),
+            'lastupdate': datetime.utcnow().isoformat(),
             'data': active_sports
         }))
         fo.close()

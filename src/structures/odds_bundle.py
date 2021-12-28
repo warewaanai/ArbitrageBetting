@@ -90,7 +90,7 @@ class OddsBundle:
             'max_revenue': self.max_revenue,
             'outcomes': self.outcomes,
             'start_time': self.start.isoformat(),
-            'live': (self.start <= datetime.now()),
+            'live': (self.start <= datetime.utcnow()),
             'markets': markets
         })
 
@@ -155,7 +155,7 @@ class ActiveBundles:
             self.fromId[id] = bundle
             bundle.id = id
 
-        if bundle.start < datetime.now():
+        if bundle.start < datetime.utcnow():
             print(f'Liveid: ({bundle.id})');
 
 
