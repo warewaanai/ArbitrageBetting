@@ -47,6 +47,8 @@ def update(
 
     for bundle in new_bundles:
         active.add(bundle)
+        if bundle.start < datetime.utcnow():
+            bundle.compress_history()
         if bundle.arbitrage() >= 0.12:
             active.add_archive(bundle.copy())
 

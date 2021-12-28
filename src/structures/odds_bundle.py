@@ -49,6 +49,10 @@ class OddsBundle:
         res.max_revenue = self.max_revenue
         return res
 
+    def compress_history(self):
+        for bookmaker in self.markets.keys():
+            self.markets[bookmaker].compress_history()
+
     def append_old(self, old : Self):
         for bookmaker in old.markets.keys():
             my_market = self.markets.get(bookmaker, None)

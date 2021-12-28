@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple, Union, cast
 from typing_extensions import Self
 
@@ -72,6 +72,19 @@ class Market:
         self.outcomes.sort()
         self.lastupdate  = odds[list(odds.keys())[0]].last_update
     
+    def compress_history(self):
+        iter_odds : Dict[Outcome, Odds] = {}
+        new_history : List[Odds] = []
+        for odds in self.history:
+            prev = iter_odds.get(odds.outcome, None)
+            if prev == None:
+                new_history.append(odds)
+                iter_odds[odds.outcome] = odds
+            else:
+                if odds.odds != prev.odds or odds.last_update - prev.last_update > timedelta(hours=2):
+                    new_history.append(odds)
+                iter_odds[odds.outcome] = odds
+
     def copy(self):
         history = list(map(lambda x : x.copy(), self.history))
         odds = {key : self.odds[key].copy() for key in self.odds}
@@ -87,7 +100,3 @@ class Market:
             cond4 = self.history == other.history
             return cond1 and cond2 and cond3
 
-
-    @staticmethod
-    def from_row(row : OddsRowFormat):
-        return -1
