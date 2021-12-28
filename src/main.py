@@ -73,12 +73,12 @@ def get_socket(id):
 def serve_index(path):
     return send_from_directory(str(app.static_folder), 'index.html')
 
-@app.route("/statistics/", defaults={'path':''})
+@app.route("/statistics/")
 def serve_stats(path):
     return send_from_directory(str(app.static_folder), 'index.html')
 
-@app.route("/event/<id>", defaults={'path':''})
-def serve_event():
+@app.route("/event/<id>")
+def serve_event(id):
     return send_from_directory(str(app.static_folder), 'index.html')
 
 
