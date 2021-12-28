@@ -24,7 +24,7 @@ active : ActiveBundles = ActiveBundles()
 def cleanup():
     active.drop_archive()
     return "oki :<"
-    
+
 
 @app.route('/api/get_stats')
 def get_stats():
@@ -86,4 +86,3 @@ if __name__ == '__main__':
     api.full_update(active)
     tl = start_update_loop(active)
     app.run(port=PORT, host="0.0.0.0", debug=False)
-    tl.stop()
