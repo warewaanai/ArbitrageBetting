@@ -171,6 +171,14 @@ class ActiveBundles:
             self.fromId[id] = bundle
             bundle.id = id
 
+        if bundle in self.archive_set:
+            bc = bundle.copy()
+            old_archive = [abundle for abundle in self.archive_set.copy() if abundle == bundle][0]
+            bc.id = old_archive.id
+            self.archive_set.discard(old_archive)
+            self.archive_set.add(bc)
+            
+
         if bundle.start < datetime.utcnow():
             print(f'Liveid: ({bundle.id})');
 
