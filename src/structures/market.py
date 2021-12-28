@@ -84,6 +84,7 @@ class Market:
                 if odds.odds != prev.odds or odds.last_update - prev.last_update > timedelta(hours=2):
                     new_history.append(odds)
                 iter_odds[odds.outcome] = odds
+        self.history = new_history
 
     def copy(self):
         history = list(map(lambda x : x.copy(), self.history))

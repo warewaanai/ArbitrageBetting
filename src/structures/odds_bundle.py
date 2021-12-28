@@ -1,5 +1,4 @@
 import json
-from simple_websocket import Server
 from datetime import date, datetime, timedelta
 from typing import Dict, List, Optional, Set, Tuple, cast
 from typing_extensions import Self
@@ -89,9 +88,9 @@ class OddsBundle:
 
             market_history = []
             if self.start < datetime.utcnow() or not market.active:
-                market_history = [odds.toDict() for odds in self.markets[bookmaker].history]
-            else:
                 market_history = [odds.toDict() for odds in self.markets[bookmaker].history if odds.last_update > self.start]
+            else:
+                market_history = [odds.toDict() for odds in self.markets[bookmaker].history]
 
             markets.append({
                 'bookmaker': bookmaker.name,
